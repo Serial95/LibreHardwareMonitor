@@ -32,6 +32,7 @@ internal class IT87XX : ISuperIO
     private readonly byte[] _initialFanPwmControlExt = new byte[MaxFanHeaders];
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[MaxFanHeaders];
     private readonly byte _version;
+    private readonly Motherboard _motherboard;
     private readonly float _voltageGain;
     private IGigabyteController _gigabyteController;
     private readonly bool _requiresBankSelect;  // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
@@ -47,6 +48,7 @@ internal class IT87XX : ISuperIO
         _gpioAddress = gpioAddress;
         _gigabyteController = gigabyteController;
         _requiresBankSelect = false;
+        _motherboard = motherboard;
 
         Chip = chip;
 
@@ -458,7 +460,7 @@ internal class IT87XX : ISuperIO
         {
             for (int i = 0; i < Fans.Length; i++)
             {
-                if (_fansDisabled[i])
+                if (_motherboard.Model == Model.Unknown && _fansDisabled[i])
                     continue;
 
                 int value = ReadByte(_hasAlt6thFanReg ? FAN_TACHOMETER_REG_ALT[i] : FAN_TACHOMETER_REG[i], out bool valid);
